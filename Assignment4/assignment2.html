@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+<title>Assignment 4 - Shading</title>
+
+<script id="vertex-shader" type="x-shader/x-vertex">
+	attribute  vec4 vPosition;
+	attribute  vec3 vNormal;
+	varying vec4 fColor;
+	
+	uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+	uniform mat4 modelView;
+	uniform mat4 projection;
+	uniform vec4 lightPosition;
+	uniform float shininess;
+	void main()
+	{
+	
+		
+		vec3 pos = -(modelView * vPosition).xyz;
+		
+		//fixed light postion
+		
+		vec3 light = lightPosition.xyz;
+		vec3 L = normalize( light - pos );
+	
+		
+		vec3 E = normalize( -pos );
+		vec3 H = normalize( L + E );
+		
+		vec4 NN = vec4(vNormal,0);
+	
+		// Transform vertex normal into eye coordinates
+		   
+		vec3 N = normalize( (modelView*NN).xyz);
+	
+		// Compute terms in the illumination equation
+		vec4 ambient = ambientProduct;
+	
+		float Kd = abs( dot(L, N));
+		vec4  diffuse = Kd*diffuseProduct;
+	
+		float Ks = pow( max(dot(N, H), 0.0), shininess );
+		vec4  specular = Ks * specularProduct;
+		
+		if( dot(L, N) < 0.0 ) {
+		specular = vec4(0.0, 0.0, 0.0, 1.0);
+		} 
+	
+		gl_Position = projection * modelView * vPosition;
+		fColor = ambient + diffuse +specular;
+		
+		fColor.a = 1.0;
+	}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+
+precision mediump float;
+varying vec4 fColor;
+
+void
+main()
+{
+    gl_FragColor = fColor;
+}
+</script>
+
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="assignment2.js"></script>
+</head>
+
+<body style="background-color:powderblue;">
+
+<div>
+Kazım Muhammet Temiz, 17050111021
+</div>
+<table>
+	<tr>
+		<td><hr>
+			<div> <strong>---------- Light ---------</strong> </div>
+			<hr>
+			<div>
+		
+				<div>Light Position</div> 
+			<div>X: -1<input id="inp_lightposX" type="range"
+			 min="-5" max="5" step="0.05" value="0.0" />1</div> 
+			<div>Y: -1<input id="inp_lightposY" type="range"
+			 min="-5" max="5" step="0.05" value="3.0" />1</div> 
+			<div>Z: -1<input id="inp_lightposZ" type="range"
+			 min="-5" max="5" step="0.05" value="0.0" />1</div>
+			 <br>
+				<div><strong>---------- Material ---------</strong></div> <hr>
+				<div>Shininess:0<input id="inp_shininess" type="range"
+					min="0.0" max="1.0" step="0.01" value="1.0" />1</div>
+					<br>
+					Diffuse
+					<div>R:0<input id="inp_matdiffuseR" type="range"
+						min="0.0" max="1.0" step="0.01" value="0" />100</div>
+						
+						<div>G:0<input id="inp_matdiffuseG" type="range"
+							min="0.0" max="1.0" step="0.01" value="0" />100</div>
+							
+							<div>b:0<input id="inp_matdiffuseB" type="range"
+								min="0.0" max="1.0" step="0.01" value="0" />100</div>
+								Specular
+								<div>R:0<input id="inp_matspecularR" type="range"
+									min="0.0" max="1.0" step="0.01" value="0" />100</div>
+									
+									<div>G:0<input id="inp_matspecularG" type="range"
+										min="0.0" max="1.0" step="0.01" value="0" />100</div>
+										
+										<div>b:0<input id="inp_matspecularB" type="range"
+											min="0.0" max="1.0" step="0.01" value="0" />100</div>		
+											Ambient
+											<div>R:0<input id="inp_matambientR" type="range"
+												min="0.0" max="1.0" step="0.01" value="0" />100</div>
+												
+												<div>G:0<input id="inp_matambientG" type="range"
+													min="0.0" max="1.0" step="0.01" value="0" />100</div>
+													
+													<div>b:0<input id="inp_matambientB" type="range"
+														min="0.0" max="1.0" step="0.01" value="0" />100</div>
+		<td>
+		
+		<canvas id="gl-canvas" width="512" height="512">
+			Oops ... your browser doesn't support the HTML5 canvas element
+		</canvas>
+		</td>
+		<td>
+			<div> <strong>---- Camera related ----</strong> </div>
+			
+			<div>FOVY: 30<input id="inp_fovy" type="range"
+			 min="30" max="120" step="5.0" value="60" />120
+			</div> 
+			
+			<div>Camera position </div>
+			
+			<div>X: -3<input id="inp_camp_X" type="range"
+			 min="-3" max="3" step="0.1" value="0" />3
+			</div> 
+			
+			<div>Y: -3<input id="inp_camp_Y" type="range"
+			min="-3" max="3" step="0.1" value="0" />3
+			</div> 
+			
+			<div>Z: 1<input id="inp_camp_Z" type="range"
+			min="1" max="7" step="0.1" value="4.3" />7
+			</div> 
+			<div>Camera target </div>
+			<div>X: -3<input id="inp_camt_X" type="range"
+				min="-3" max="3" step="0.1" value="0" />3
+			   </div> 
+			   
+			   <div>Y: -3<input id="inp_camt_Y" type="range"
+			   min="-3" max="3" step="0.1" value="0" />3
+			   </div> 
+			   
+			   <div>Z: -3<input id="inp_camt_Z" type="range"
+			   min="-3" max="3" step="0.1" value="0" />3
+			   </div> 
+
+			   
+			<div> <strong>---- Transformations ----</strong> </div>
+			
+			
+			<div>Position</div> 
+			<div>X: -1<input id="inp_objX" type="range"
+			 min="-1" max="1" step="0.05" value="0" />1</div> 
+			<div>Y: -1<input id="inp_objY" type="range"
+			 min="-1" max="1" step="0.05" value="0" />1</div> 
+			<div>Z: -1<input id="inp_objZ" type="range"
+			 min="-1" max="1" step="0.05" value="0" />1</div>
+			 <br>
+			<div>Scale: 0<input id="inp_obj_scale" type="range"
+			 min="0" max="2" step="0.05" value="1" />2</div> 
+			 <br>
+			<div>Rotation</div> 
+			
+			<div>X: -2<input id="inp_obj_rotationX" type="range"
+				min="-180" max="180" step="5.0" value="0" />2
+			   </div> 
+			<div>Y: -2<input id="inp_obj_rotationY" type="range"
+			min="-180" max="180" step="5.0" value="0" />2
+			</div>
+			<div>Z: -2<input id="inp_obj_rotationZ" type="range"
+			min="-180" max="180" step="5.0" value="0" />2
+			</div>
+			<br>
+			<div>Speed: -2<input id="inp_wing_speed" type="range"
+			 min="-2" max="2" step="0.1" value="0.5" />2
+			</div> 
+			<br>
+		</td>
+	</tr>
+</table>
+<div>
+</body>
+</html>
